@@ -1,11 +1,12 @@
-#!/usr/bin/python
 
 import turtle
-turtle.reset()
-
-turtle.screensize(canvwidth=500, canvheight=600, bg="white")
-turtle.title("ice dun dun by Olivia ~~~")
-turtle.speed(110)
+import glob
+from PIL import Image
+import os
+import sys
+import subprocess
+import tkinter as _
+_.ROUND = _.BUTT
 
 def gray_white_style():
     turtle.pensize(3)
@@ -384,7 +385,31 @@ def heart(x, y):
     turtle.penup()
     turtle.hideturtle()
 
-if __name__ == "__main__":
+frames_per_second = 10
+running = True
+
+def stop():
+    global running
+    running = False
+
+def save_eps(counter=[1]):
+    turtle.getcanvas().postscript(file="ice_dundun{0:03d}.eps".format(counter[0]))
+    counter[0] += 1
+    if running:
+        
+        turtle.ontimer(save_eps, int(1000 / frames_per_second))
+    else:
+        print("not running")
+        eps2gif()
+        print("over to gif")
+        sys.exit()
+
+def draw():
+    turtle.reset()
+    turtle.hideturtle()
+    turtle.screensize(canvwidth=500, canvheight=600, bg="white")
+    turtle.title("ice dun dun by Olivia ~~~")
+    turtle.speed(110)
     right_hand(200, 97)
     left_hand(-250, 40)
     body(145, 220)
@@ -392,6 +417,30 @@ if __name__ == "__main__":
     nose_eye_mouth(-10, 55)
     logo(-0, -170)
     heart(225, 60)
-    turtle.mainloop()
+    turtle.ontimer(stop, 500)
+
+def eps2gif(input_name="ice_dundun*.eps", output_name="ice_dundun.gif"):
+    print("start to gif")
+    pwd = subprocess.run("pwd", stdout=subprocess.PIPE).stdout.decode("utf-8").strip()
+    input_files = os.path.join(pwd, input_name)
+    frames = [Image.open(image) for image in glob.glob(input_files)]
+    frames.sort(key=lambda x : x.filename)
+    frame_one = frames[0]
+    print(f"frames{[fn.filename for fn in frames]}")
+    frame_one.save(output_name, format="GIF", append_images=frames,save_all=True, duration=100, loop=0)
+    print("over to gif")
+    [subprocess.run(["rm", f"{fn.filename}"]) for fn in frames]
+    print("rm eps...")
+    
+
+if __name__ == "__main__":
+    print("start save")
+    save_eps()
+    print("end save")
+    turtle.ontimer(draw, 500)
+    print("...")
+    turtle.done()
+    print("done")
+    #turtle.mainloop()
 
 
